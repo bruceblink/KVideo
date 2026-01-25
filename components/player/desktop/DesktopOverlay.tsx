@@ -73,8 +73,8 @@ export function DesktopOverlay({
 
     return (
         <>
-            {/* More Menu (Top Left) */}
-            <div className={`absolute top-6 left-6 z-50 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`} style={{ pointerEvents: showControls ? 'auto' : 'none' }}>
+            {/* More Menu (Top Left) - Moved slightly down and lower z-index to stay below navbar */}
+            <div className={`absolute top-8 left-6 z-40 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`} style={{ pointerEvents: showControls ? 'auto' : 'none' }}>
                 <DesktopMoreMenu
                     showMoreMenu={showMoreMenu}
                     isProxied={isProxied}
@@ -86,8 +86,8 @@ export function DesktopOverlay({
                 />
             </div>
 
-            {/* Speed Menu (Top Right) */}
-            <div className={`absolute top-6 right-6 z-50 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`} style={{ pointerEvents: showControls ? 'auto' : 'none' }}>
+            {/* Speed Menu (Top Right) - Moved slightly down and lower z-index */}
+            <div className={`absolute top-8 right-6 z-40 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`} style={{ pointerEvents: showControls ? 'auto' : 'none' }}>
                 <DesktopSpeedMenu
                     showSpeedMenu={showSpeedMenu}
                     playbackRate={playbackRate}

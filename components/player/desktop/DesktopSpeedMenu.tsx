@@ -25,6 +25,17 @@ export function DesktopSpeedMenu({
     const buttonRef = React.useRef<HTMLButtonElement>(null);
     const [menuPosition, setMenuPosition] = React.useState({ top: 0, left: 0 });
 
+    const [isFullscreen, setIsFullscreen] = React.useState(false);
+
+    React.useEffect(() => {
+        const updateFullscreen = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', updateFullscreen);
+        updateFullscreen();
+        return () => document.removeEventListener('fullscreenchange', updateFullscreen);
+    }, []);
+
     React.useEffect(() => {
         if (showSpeedMenu && buttonRef.current && containerRef.current) {
             const buttonRect = buttonRef.current.getBoundingClientRect();
@@ -36,6 +47,18 @@ export function DesktopSpeedMenu({
             });
         }
     }, [showSpeedMenu, containerRef]);
+
+    // Auto-close menu on scroll
+    React.useEffect(() => {
+        if (!showSpeedMenu) return;
+        const handleScroll = () => {
+            if (showSpeedMenu) {
+                onToggleSpeedMenu();
+            }
+        };
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [showSpeedMenu, onToggleSpeedMenu]);
 
     const handleToggle = () => {
         if (!showSpeedMenu && buttonRef.current && containerRef.current) {
@@ -53,10 +76,11 @@ export function DesktopSpeedMenu({
 
     const MenuContent = (
         <div
-            className="absolute z-[9999] bg-[var(--glass-bg)] backdrop-blur-[25px] saturate-[180%] rounded-[var(--radius-2xl)] border border-[var(--glass-border)] shadow-[var(--shadow-md)] p-1.5 w-fit min-w-[4.5rem]"
+            className={`absolute z-[9999] bg-[var(--glass-bg)] backdrop-blur-[25px] saturate-[180%] rounded-[var(--radius-2xl)] border border-[var(--glass-border)] shadow-[var(--shadow-md)] p-1 sm:p-1.5 w-fit min-w-[3.5rem] sm:min-w-[4.5rem] animate-in fade-in zoom-in-95 duration-200 ${isFullscreen ? 'max-h-[60vh] overflow-y-auto' : ''
+                }`}
             style={{
-                top: menuPosition.top,
-                left: menuPosition.left,
+                top: `${menuPosition.top}px`,
+                left: `${menuPosition.left}px`,
                 transform: 'translateX(-100%)', // Align right edge
             }}
             onMouseEnter={onMouseEnter}
@@ -66,7 +90,7 @@ export function DesktopSpeedMenu({
                 <button
                     key={speed}
                     onClick={() => onSpeedChange(speed)}
-                    className={`w-full px-4 py-1.5 rounded-[var(--radius-2xl)] text-sm font-medium transition-colors ${playbackRate === speed
+                    className={`w-full px-3 py-1 sm:px-4 sm:py-1.5 rounded-[var(--radius-2xl)] text-xs sm:text-sm font-medium transition-colors ${playbackRate === speed
                         ? 'bg-[var(--accent-color)] text-white'
                         : 'text-[var(--text-color)] hover:bg-[color-mix(in_srgb,var(--accent-color)_15%,transparent)]'
                         }`}
@@ -84,7 +108,7 @@ export function DesktopSpeedMenu({
                 onClick={handleToggle}
                 onMouseEnter={onMouseEnter}
                 onMouseLeave={onMouseLeave}
-                className="group flex items-center justify-center w-12 h-12 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm transition-all duration-300 hover:scale-110 active:scale-95 text-white/90 font-medium text-sm"
+                className="group flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm transition-all duration-300 hover:scale-110 active:scale-95 text-white/90 font-medium text-xs sm:text-sm"
                 aria-label="播放速度"
             >
                 {playbackRate}x

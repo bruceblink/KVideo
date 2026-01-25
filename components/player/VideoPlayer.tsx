@@ -173,7 +173,7 @@ export function VideoPlayer({
   }
 
   return (
-    <Card hover={false} className="p-0 overflow-hidden relative">
+    <Card hover={false} className="p-0 relative">
       {/* Mode Indicator Badge - controlled by settings */}
       {showModeIndicator && (
         <div className="absolute top-3 right-3 z-30">
