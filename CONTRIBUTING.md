@@ -14,24 +14,24 @@ Do not reintroduce permissive relay behavior, wildcard CORS, cookie forwarding, 
 ## Prerequisites
 
 - Node.js 22+
-- npm 10+
+- pnpm 10+
 - Docker if you need to run the image/build checks locally
 
 Install dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
 ## Development Commands
 
 ```bash
-npm run dev
-npm run lint
-npm test
-npm run test:e2e
-npm run build
-npm run cf:build
+pnpm dev
+pnpm lint
+pnpm test
+pnpm test:e2e
+pnpm build
+pnpm cf:build
 docker compose config
 docker build -t kvideo .
 ```
@@ -40,11 +40,11 @@ docker build -t kvideo .
 
 At minimum, run the checks relevant to the code you changed. For broad or infrastructure-facing work, run the full matrix:
 
-- `npm run lint`
-- `npm test`
-- `npm run build`
-- `npm run cf:build`
-- `npm audit --omit=dev`
+- `pnpm lint`
+- `pnpm test`
+- `pnpm build`
+- `pnpm cf:build`
+- `pnpm audit --prod`
 - `docker compose config`
 - `docker build -t kvideo .`
 
