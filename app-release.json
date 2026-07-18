@@ -1,0 +1,19 @@
+{
+  "repository": {
+    "owner": "bruceblink",
+    "name": "KVideo",
+    "branch": "main"
+  },
+  "currentVersion": "0.1.0",
+  "releases": [
+    {
+      "version": "0.1.0",
+      "publishedAt": "2026-07-18",
+      "title": "新项目初始化",
+      "notes": [
+        "以全新的仓库、版本和开源协议开始维护。",
+        "保留现有 Web 应用功能，后续迭代聚焦历史、收藏与多端同步。"
+      ]
+    }
+  ]
+}
