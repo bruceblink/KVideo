@@ -2,6 +2,37 @@ import { useState, useCallback } from 'react';
 import { useHistoryStore, usePremiumHistoryStore } from '@/lib/store/history-store';
 import { useFavoritesStore, usePremiumFavoritesStore } from '@/lib/store/favorites-store';
 import { getProfileId } from '@/lib/store/auth-store';
+import { getSyncHubConfig, isSyncHubConfigured } from '@/lib/store/synchub-sync-store';
+
+type SyncHubDocument<T> = {
+  code: number;
+  message: string;
+  data?: {
+    payload: T | null;
+  };
+};
+
+async function syncHubRequest<T>(
+  path: string,
+  init?: RequestInit
+): Promise<T | null> {
+  const config = getSyncHubConfig();
+  if (!isSyncHubConfigured(config)) return null;
+
+  const response = await fetch(`${config.endpoint}/api/v1/metadata/kvideo/${path}`, {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': config.apiKey,
+      ...init?.headers,
+    },
+  });
+  const result = await response.json() as SyncHubDocument<T>;
+  if (!response.ok || result.code !== 0) {
+    throw new Error(result.message || 'SyncHub request failed');
+  }
+  return result.data?.payload ?? null;
+}
 
 export function useCloudSync(isPremium = false) {
   const [isSyncing, setIsSyncing] = useState(false);
@@ -10,6 +41,22 @@ export function useCloudSync(isPremium = false) {
   const favoritesStore = isPremium ? usePremiumFavoritesStore : useFavoritesStore;
 
   const pullFromCloud = useCallback(async () => {
+    const syncHubConfig = getSyncHubConfig();
+    if (isSyncHubConfigured(syncHubConfig)) {
+      setIsSyncing(true);
+      try {
+        const [history, favorites] = await Promise.all([
+          syncHubRequest<unknown[]>('watch-history'),
+          syncHubRequest<unknown[]>('favorites'),
+        ]);
+        if (Array.isArray(history)) historyStore.getState().importHistory(history as never[]);
+        if (Array.isArray(favorites)) favoritesStore.getState().importFavorites(favorites as never[]);
+      } finally {
+        setIsSyncing(false);
+      }
+      return;
+    }
+
     const profileId = getProfileId();
     if (!profileId) return;
 
@@ -34,6 +81,26 @@ export function useCloudSync(isPremium = false) {
   }, [historyStore, favoritesStore]);
 
   const pushToCloud = useCallback(async () => {
+    const syncHubConfig = getSyncHubConfig();
+    if (isSyncHubConfigured(syncHubConfig)) {
+      setIsSyncing(true);
+      try {
+        await Promise.all([
+          syncHubRequest('watch-history', {
+            method: 'PUT',
+            body: JSON.stringify({ payload: historyStore.getState().viewingHistory }),
+          }),
+          syncHubRequest('favorites', {
+            method: 'PUT',
+            body: JSON.stringify({ payload: favoritesStore.getState().favorites }),
+          }),
+        ]);
+      } finally {
+        setIsSyncing(false);
+      }
+      return;
+    }
+
     const profileId = getProfileId();
     if (!profileId) return;
 

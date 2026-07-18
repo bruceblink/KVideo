@@ -14,6 +14,7 @@ import { SettingsHeader } from '@/components/settings/SettingsHeader';
 import { AppVersionSettings } from '@/components/settings/AppVersionSettings';
 import { UserSourceSettings } from '@/components/settings/UserSourceSettings';
 import { UserDanmakuSettings } from '@/components/settings/UserDanmakuSettings';
+import { SyncHubSettings } from '@/components/settings/SyncHubSettings';
 import { PermissionGate } from '@/components/PermissionGate';
 import { hasPermission } from '@/lib/store/auth-store';
 import { useSettingsPage } from './hooks/useSettingsPage';
@@ -76,7 +77,7 @@ export default function SettingsPage() {
   } = useSettingsPage();
 
   return (
-    <div className="min-h-screen bg-[var(--bg-color)] bg-[image:var(--bg-image)] bg-fixed">
+    <div className="min-h-screen bg-(--bg-color) bg-(image:--bg-image) bg-fixed">
       <div className="container mx-auto px-4 py-8 max-w-4xl space-y-8">
         {/* Header */}
         <SettingsHeader />
@@ -85,6 +86,8 @@ export default function SettingsPage() {
 
         {/* Account Settings */}
         <AccountSettings />
+
+        <SyncHubSettings />
 
         {/* Player Settings */}
         <PermissionGate permission="player_settings">

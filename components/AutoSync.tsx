@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useHistoryStore } from '@/lib/store/history-store';
 import { useFavoritesStore } from '@/lib/store/favorites-store';
 import { useCloudSync } from '@/lib/hooks/useCloudSync';
 import { useConfigSync } from '@/lib/hooks/useConfigSync';
 import { getSession } from '@/lib/store/auth-store';
+import { getSyncHubConfig, subscribeToSyncHubConfig } from '@/lib/store/synchub-sync-store';
 
 type VoidCallback = () => void;
 
@@ -23,13 +24,14 @@ function debounce(fn: VoidCallback, delay: number): VoidCallback {
 
 export function AutoSync() {
   const { pushToCloud, pullFromCloud } = useCloudSync();
+  const [syncConfigVersion, refreshSync] = useState(0);
 
   // Config sync (sources, settings) — works without Redis, file-based
   useConfigSync();
 
   useEffect(() => {
-    const session = getSession();
-    if (!session) return; // 未登录不进行同步
+    const canSync = !!getSession() || !!getSyncHubConfig().apiKey;
+    if (!canSync) return;
 
     // 1. 刚打开网页时，主动从云端拉取一次最新数据
     pullFromCloud();
@@ -50,7 +52,9 @@ export function AutoSync() {
       unsubHistory();
       unsubFavorites();
     };
-  }, [pushToCloud, pullFromCloud]);
+  }, [pushToCloud, pullFromCloud, syncConfigVersion]);
+
+  useEffect(() => subscribeToSyncHubConfig(() => refreshSync((value) => value + 1)), []);
 
   return null; // 这是一个静默组件，不需要渲染任何UI
 }
