@@ -34,6 +34,17 @@ async function syncHubRequest<T>(
   return result.data?.payload ?? null;
 }
 
+async function serverSyncHubRequest<T>(path: string, init?: RequestInit): Promise<T | null | undefined> {
+  const response = await fetch(`/api/synchub/metadata/${path}`, {
+    ...init,
+    headers: { 'Content-Type': 'application/json', ...init?.headers },
+  });
+  if (response.status === 404) return undefined;
+  const result = await response.json() as SyncHubDocument<T>;
+  if (!response.ok || result.code !== 0) throw new Error(result.message || 'SyncHub request failed');
+  return result.data?.payload ?? null;
+}
+
 export function useCloudSync(isPremium = false) {
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -54,6 +65,21 @@ export function useCloudSync(isPremium = false) {
       } finally {
         setIsSyncing(false);
       }
+      return;
+    }
+
+    try {
+      const [history, favorites] = await Promise.all([
+        serverSyncHubRequest<unknown[]>('watch-history'),
+        serverSyncHubRequest<unknown[]>('favorites'),
+      ]);
+      if (history !== undefined || favorites !== undefined) {
+        if (Array.isArray(history)) historyStore.getState().importHistory(history as never[]);
+        if (Array.isArray(favorites)) favoritesStore.getState().importFavorites(favorites as never[]);
+        return;
+      }
+    } catch (error) {
+      console.error('Failed to pull from SyncHub:', error);
       return;
     }
 
@@ -98,6 +124,17 @@ export function useCloudSync(isPremium = false) {
       } finally {
         setIsSyncing(false);
       }
+      return;
+    }
+
+    try {
+      const [history, favorites] = await Promise.all([
+        serverSyncHubRequest('watch-history', { method: 'PUT', body: JSON.stringify({ payload: historyStore.getState().viewingHistory }) }),
+        serverSyncHubRequest('favorites', { method: 'PUT', body: JSON.stringify({ payload: favoritesStore.getState().favorites }) }),
+      ]);
+      if (history !== undefined || favorites !== undefined) return;
+    } catch (error) {
+      console.error('Failed to push to SyncHub:', error);
       return;
     }
 
