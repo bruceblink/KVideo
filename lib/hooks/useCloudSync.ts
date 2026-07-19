@@ -142,6 +142,8 @@ export function useCloudSync(isPremium = false) {
             body: JSON.stringify({ payload: favoritesStore.getState().favorites }),
           }),
         ]);
+      } catch (error) {
+        console.error('Failed to push to SyncHub:', error);
       } finally {
         setIsSyncing(false);
       }
