@@ -22,6 +22,7 @@ const routeFiles = [
   'app/api/probe-resolution/route.ts',
   'app/api/proxy/route.ts',
   'app/api/search-parallel/route.ts',
+  'app/api/synchub/metadata/[collection]/route.ts',
   'app/api/user/config/route.ts',
   'app/api/user/sync/route.ts',
 ];
