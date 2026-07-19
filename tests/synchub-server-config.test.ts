@@ -11,6 +11,12 @@ test('SyncHub server config requires an endpoint and API key', async () => {
     delete process.env.SYNCHUB_API_KEY;
     assert.equal(getSyncHubServerConfig(), null);
 
+    process.env.SYNCHUB_API_KEY = 'shk_production';
+    assert.deepEqual(getSyncHubServerConfig(), {
+      endpoint: 'https://sync.likanug.app',
+      apiKey: 'shk_production',
+    });
+
     process.env.SYNCHUB_URL = 'https://sync.example.com/';
     process.env.SYNCHUB_API_KEY = 'shk_example';
     assert.deepEqual(getSyncHubServerConfig(), { endpoint: 'https://sync.example.com', apiKey: 'shk_example' });

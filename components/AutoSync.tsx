@@ -5,8 +5,7 @@ import { useHistoryStore } from '@/lib/store/history-store';
 import { useFavoritesStore } from '@/lib/store/favorites-store';
 import { useCloudSync } from '@/lib/hooks/useCloudSync';
 import { useConfigSync } from '@/lib/hooks/useConfigSync';
-import { getSession } from '@/lib/store/auth-store';
-import { getSyncHubConfig, subscribeToSyncHubConfig } from '@/lib/store/synchub-sync-store';
+import { subscribeToSyncHubConfig } from '@/lib/store/synchub-sync-store';
 
 type VoidCallback = () => void;
 
@@ -30,9 +29,6 @@ export function AutoSync() {
   useConfigSync();
 
   useEffect(() => {
-    const canSync = !!getSession() || !!getSyncHubConfig().apiKey;
-    if (!canSync) return;
-
     // 1. 刚打开网页时，主动从云端拉取一次最新数据
     pullFromCloud();
 
