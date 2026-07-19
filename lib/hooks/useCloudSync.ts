@@ -3,6 +3,7 @@ import { useHistoryStore, usePremiumHistoryStore } from '@/lib/store/history-sto
 import { useFavoritesStore, usePremiumFavoritesStore } from '@/lib/store/favorites-store';
 import { getProfileId } from '@/lib/store/auth-store';
 import { getSyncHubConfig, isSyncHubConfigured } from '@/lib/store/synchub-sync-store';
+import { initializeSyncHubCollection } from '@/lib/synchub-initialization';
 
 type SyncHubDocument<T> = {
   code: number;
@@ -60,8 +61,28 @@ export function useCloudSync(isPremium = false) {
           syncHubRequest<unknown[]>('watch-history'),
           syncHubRequest<unknown[]>('favorites'),
         ]);
-        if (Array.isArray(history)) historyStore.getState().importHistory(history as never[]);
-        if (Array.isArray(favorites)) favoritesStore.getState().importFavorites(favorites as never[]);
+        await Promise.all([
+          initializeSyncHubCollection(
+            history,
+            historyStore.getState().viewingHistory,
+            (value) => historyStore.getState().importHistory(value as never[]),
+            (value) => syncHubRequest('watch-history', {
+              method: 'PUT',
+              body: JSON.stringify({ payload: value }),
+            }),
+          ),
+          initializeSyncHubCollection(
+            favorites,
+            favoritesStore.getState().favorites,
+            (value) => favoritesStore.getState().importFavorites(value as never[]),
+            (value) => syncHubRequest('favorites', {
+              method: 'PUT',
+              body: JSON.stringify({ payload: value }),
+            }),
+          ),
+        ]);
+      } catch (error) {
+        console.error('Failed to initialize SyncHub:', error);
       } finally {
         setIsSyncing(false);
       }
